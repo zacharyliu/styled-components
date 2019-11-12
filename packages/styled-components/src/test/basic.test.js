@@ -196,6 +196,18 @@ describe('basic', () => {
     expect(Comp.displayName).toBe('Styled(Comp)');
   });
 
+  it('works with custom elements (use class instead of className)', () => {
+    const Comp = styled('custom-element')`
+      color: red;
+    `;
+
+    expect(TestRenderer.create(<Comp />).toJSON()).toMatchInlineSnapshot(`
+      <custom-element
+        class="sc-a b"
+      />
+    `);
+  });
+
   describe('jsdom tests', () => {
     class InnerComponent extends Component<*, *> {
       render() {
@@ -337,10 +349,10 @@ describe('basic', () => {
 
       expectCSSMatches(`.sc-a {color: red;} .sc-b {color: green;}`);
       expect(rendered.toJSON()).toMatchInlineSnapshot(`
-<div
-  className="sc-a sc-b"
-/>
-`);
+                <div
+                  className="sc-a sc-b"
+                />
+            `);
     });
 
     it('folds defaultProps', () => {
@@ -368,16 +380,16 @@ describe('basic', () => {
       };
 
       expect(Outer.defaultProps).toMatchInlineSnapshot(`
-Object {
-  "style": Object {
-    "background": "silver",
-    "textAlign": "center",
-  },
-  "theme": Object {
-    "fontSize": 16,
-  },
-}
-`);
+                Object {
+                  "style": Object {
+                    "background": "silver",
+                    "textAlign": "center",
+                  },
+                  "theme": Object {
+                    "fontSize": 16,
+                  },
+                }
+            `);
     });
 
     it('generates unique classnames when not using babel', () => {
