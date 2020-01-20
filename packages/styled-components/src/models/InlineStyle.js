@@ -40,16 +40,7 @@ export default (styleSheet: StyleSheet) => {
             console.warn(`Node of type ${node.type} not supported as an inline style`);
           }
         });
-        // RN currently does not support differing values for the corner radii of Image
-        // components (but does for View). It is almost impossible to tell whether we'll have
-        // support, so we'll just disable multiple values here.
-        // https://github.com/styled-components/css-to-react-native/issues/11
-        const styleObject = transformDeclPairs(declPairs, [
-          'borderRadius',
-          'borderWidth',
-          'borderColor',
-          'borderStyle',
-        ]);
+        const styleObject = transformDeclPairs(declPairs);
         const styles = styleSheet.create({
           generated: styleObject,
         });
