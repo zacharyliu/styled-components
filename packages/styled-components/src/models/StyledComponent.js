@@ -7,6 +7,7 @@ import React, {
   type AbstractComponent,
   type Ref,
 } from 'react';
+import hoist from 'hoist-non-react-statics';
 import merge from '../utils/mixinDeep';
 import ComponentStyle from './ComponentStyle';
 import createWarnTooManyClasses from '../utils/createWarnTooManyClasses';
@@ -15,14 +16,13 @@ import domElements from '../utils/domElements';
 import escape from '../utils/escape';
 import generateDisplayName from '../utils/generateDisplayName';
 import getComponentName from '../utils/getComponentName';
-import hasher from '../utils/hasher';
-import hoist from '../utils/hoist';
+import generateComponentId from '../utils/generateComponentId';
 import isFunction from '../utils/isFunction';
 import isStyledComponent from '../utils/isStyledComponent';
 import isTag from '../utils/isTag';
 import joinStrings from '../utils/joinStrings';
 import { ThemeContext } from './ThemeProvider';
-import { useStyleSheet } from './StyleSheetManager';
+import { useStyleSheet, useStylis } from './StyleSheetManager';
 import { EMPTY_ARRAY, EMPTY_OBJECT } from '../utils/empties';
 
 import type { Attrs, RuleSet, Target } from '../types';
@@ -37,7 +37,7 @@ function generateId(displayName: string, parentComponentId: string) {
   // Ensure that no displayName can lead to duplicate componentIds
   identifiers[name] = (identifiers[name] || 0) + 1;
 
-  const componentId = `${name}-${hasher(name + identifiers[name])}`;
+  const componentId = `${name}-${generateComponentId(name + identifiers[name])}`;
   return parentComponentId ? `${parentComponentId}-${componentId}` : componentId;
 }
 
@@ -76,7 +76,7 @@ interface StyledComponentWrapperProperties {
   foldedComponentIds: Array<string>;
   target: Target;
   styledComponentId: string;
-  warnTooManyClasses: $Call<typeof createWarnTooManyClasses, string>;
+  warnTooManyClasses: $Call<typeof createWarnTooManyClasses, string, string>;
 }
 
 type StyledComponentWrapper<Config, Instance> = AbstractComponent<Config, Instance> &
@@ -86,17 +86,18 @@ function useInjectedStyle<T>(
   componentStyle: ComponentStyle,
   hasAttrs: boolean,
   resolvedAttrs: T,
-  warnTooManyClasses?: $Call<typeof createWarnTooManyClasses, string>
+  warnTooManyClasses?: $Call<typeof createWarnTooManyClasses, string, string>
 ) {
   const styleSheet = useStyleSheet();
+  const stylis = useStylis();
 
   // statically styled-components don't need to build an execution context object,
   // and shouldn't be increasing the number of class names
   const isStatic = componentStyle.isStatic && !hasAttrs;
 
   const className = isStatic
-    ? componentStyle.generateAndInjectStyles(EMPTY_OBJECT, styleSheet)
-    : componentStyle.generateAndInjectStyles(resolvedAttrs, styleSheet);
+    ? componentStyle.generateAndInjectStyles(EMPTY_OBJECT, styleSheet, stylis)
+    : componentStyle.generateAndInjectStyles(resolvedAttrs, styleSheet, stylis);
 
   useDebugValue(className);
 
@@ -279,14 +280,17 @@ export default function createStyledComponent(
   });
 
   if (process.env.NODE_ENV !== 'production') {
-    WrappedStyledComponent.warnTooManyClasses = createWarnTooManyClasses(displayName);
+    WrappedStyledComponent.warnTooManyClasses = createWarnTooManyClasses(
+      displayName,
+      styledComponentId
+    );
   }
 
   // $FlowFixMe
   WrappedStyledComponent.toString = () => `.${WrappedStyledComponent.styledComponentId}`;
 
   if (isCompositeComponent) {
-    hoist(WrappedStyledComponent, target, {
+    hoist(WrappedStyledComponent, (target: any), {
       // all SC-specific things should not be hoisted
       attrs: true,
       componentStyle: true,

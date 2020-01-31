@@ -21,6 +21,10 @@ import withTheme from './hoc/withTheme';
 /* Import hooks */
 import useTheme from './hooks/useTheme';
 
+/* Define bundle version for export */
+declare var __VERSION__: string;
+const version = __VERSION__;
+
 /* Warning if you've imported this file on React Native */
 if (
   process.env.NODE_ENV !== 'production' &&
@@ -36,7 +40,11 @@ if (
 }
 
 /* Warning if there are several instances of styled-components */
-if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+if (
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NODE_ENV !== 'test' &&
+  typeof window !== 'undefined'
+) {
   window['__styled-components-init__'] = window['__styled-components-init__'] || 0;
 
   if (window['__styled-components-init__'] === 1) {
@@ -67,5 +75,6 @@ export {
   ThemeContext,
   ThemeProvider,
   useTheme,
+  version,
   withTheme,
 };

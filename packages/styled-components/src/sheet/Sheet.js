@@ -1,6 +1,5 @@
 // @flow
 import { DISABLE_SPEEDY, IS_BROWSER } from '../constants';
-import createStylisInstance from '../utils/stylis';
 import type { GroupedTag, Sheet, SheetOptions } from './types';
 import { makeTag } from './Tag';
 import { makeGroupedTag } from './GroupedTag';
@@ -15,15 +14,19 @@ type SheetConstructorArgs = {
   target?: HTMLElement,
 };
 
+type GlobalStylesAllocationMap = { [key: string]: number };
+type NamesAllocationMap = Map<string, Set<string>>;
+
 const defaultOptions = {
   isServer: !IS_BROWSER,
-  stringifier: createStylisInstance(),
   useCSSOMInjection: !DISABLE_SPEEDY,
 };
 
 /** Contains the main stylesheet logic for stringification and caching */
 export default class StyleSheet implements Sheet {
-  names: Map<string, Set<string>>;
+  gs: GlobalStylesAllocationMap;
+
+  names: NamesAllocationMap;
 
   options: SheetOptions;
 
@@ -34,16 +37,20 @@ export default class StyleSheet implements Sheet {
     return getGroupForId(id);
   }
 
-  constructor(options: SheetConstructorArgs = defaultOptions) {
+  constructor(
+    options: SheetConstructorArgs = defaultOptions,
+    globalStyles?: GlobalStylesAllocationMap = {},
+    names?: NamesAllocationMap
+  ) {
     this.options = {
       ...defaultOptions,
       ...options,
     };
 
-    this.names = new Map();
+    this.gs = globalStyles;
+    this.names = new Map(names);
 
-    // We rehydrate only once and use the sheet that is
-    // created first
+    // We rehydrate only once and use the sheet that is created first
     if (!this.options.isServer && IS_BROWSER && SHOULD_REHYDRATE) {
       SHOULD_REHYDRATE = false;
       rehydrateSheet(this);
@@ -51,7 +58,11 @@ export default class StyleSheet implements Sheet {
   }
 
   reconstructWithOptions(options: SheetConstructorArgs) {
-    return new StyleSheet({ ...this.options, ...options });
+    return new StyleSheet({ ...this.options, ...options }, this.gs, this.names);
+  }
+
+  allocateGSInstance(id: string) {
+    return (this.gs[id] = (this.gs[id] || 0) + 1);
   }
 
   /** Lazily initialises a GroupedTag for when it's actually needed */

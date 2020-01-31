@@ -12,7 +12,7 @@
   <br />
   <a href="https://www.npmjs.com/package/styled-components"><img src="https://www.styled-components.com/proxy/downloads.svg" alt="downloads: 600k/month"></a>
   <a href="#backers" alt="sponsors on Open Collective"><img src="https://opencollective.com/styled-components/backers/badge.svg" /></a> <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/styled-components/sponsors/badge.svg" /></a> <a href="https://spectrum.chat/styled-components"><img src="https://withspectrum.github.io/badge/badge.svg" alt="Join the community on Spectrum"></a>
-  <img src="https://www.styled-components.com/proxy/size.svg" alt="gzip size">
+  <a href="https://bundlephobia.com/result?p=styled-components" title="styled-components latest minified+gzip size"><img src="https://badgen.net/bundlephobia/minzip/styled-components" alt="gzip size"></a>
   <a href="#alternative-installation-methods"><img src="https://img.shields.io/badge/module%20formats-umd%2C%20cjs%2C%20esm-green.svg" alt="module formats: umd, cjs, esm"></a>
 </div>
 
@@ -49,11 +49,11 @@ _Supported by [Front End Center](https://frontend.center). Thank you for making 
 
 ## Upgrading from v4
 
-1. `npm install styled-components@beta react@^16.8 react-dom@^16.8 react-is@^16.8`
+1. `npm install styled-components@^5.0.0 react@^16.8 react-dom@^16.8 react-is@^16.8`
 1. ??
 1. Profit!
 
-> Note that integrations like `jest-styled-components` that make use of internals will need to be updated to work with v5 and likely will not work properly during the alpha/beta period.
+> If you use jest-styled-components, make sure you update that too.
 
 ## [Docs](https://www.styled-components.com/docs)
 

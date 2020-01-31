@@ -1,7 +1,5 @@
 // @flow
 
-import { type Stringifier } from '../utils/stylis';
-
 /** CSSStyleSheet-like Tag abstraction for CSS rules */
 export interface Tag {
   constructor(target?: HTMLElement): void;
@@ -22,12 +20,12 @@ export interface GroupedTag {
 
 export type SheetOptions = {
   isServer: boolean,
-  stringifier: Stringifier,
   target?: HTMLElement,
   useCSSOMInjection: boolean,
 };
 
 export interface Sheet {
+  allocateGSInstance(id: string): number;
   clearNames(id: string): void;
   clearRules(id: string): void;
   clearTag(): void;

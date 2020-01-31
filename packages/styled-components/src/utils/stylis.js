@@ -1,15 +1,11 @@
 import Stylis from '@emotion/stylis';
-import _insertRulePlugin from 'stylis-rule-sheet';
+import { type Stringifier } from '../types';
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './empties';
+import throwStyledError from './error';
+import { phash, SEED } from './hash';
+import insertRulePlugin from './stylisPluginInsertRule';
 
 const COMMENT_REGEX = /^\s*\/\/.*$/gm;
-
-export type Stringifier = (
-  css: string,
-  selector: string,
-  prefix: ?string,
-  componentId: string
-) => Array<string>;
 
 type StylisInstanceConstructorArgs = {
   options?: Object,
@@ -37,7 +33,7 @@ export default function createStylisInstance({
     }
   };
 
-  const parseRulesPlugin = _insertRulePlugin(rule => {
+  const parseRulesPlugin = insertRulePlugin(rule => {
     parsingRules.push(rule);
   });
 
@@ -82,7 +78,7 @@ export default function createStylisInstance({
 
   stylis.use([...plugins, selfReferenceReplacementPlugin, parseRulesPlugin, returnRulesPlugin]);
 
-  return function stringifyRules(css, selector, prefix, componentId = '&'): Stringifier {
+  function stringifyRules(css, selector, prefix, componentId = '&'): Stringifier {
     const flatCSS = css.replace(COMMENT_REGEX, '');
     const cssStr = selector && prefix ? `${prefix} ${selector} { ${flatCSS} }` : flatCSS;
 
@@ -94,5 +90,19 @@ export default function createStylisInstance({
     _selectorRegexp = new RegExp(`\\${_selector}\\b`, 'g');
 
     return stylis(prefix || !selector ? '' : selector, cssStr);
-  };
+  }
+
+  stringifyRules.hash = plugins.length
+    ? plugins
+        .reduce((acc, plugin) => {
+          if (!plugin.name) {
+            throwStyledError(15);
+          }
+
+          return phash(acc, plugin.name);
+        }, SEED)
+        .toString()
+    : '';
+
+  return stringifyRules;
 }
